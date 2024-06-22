@@ -162,7 +162,7 @@ bench::mark({
 
 | expression | min | median | itr/sec | mem_alloc |
 |:---|---:|---:|---:|---:|
-| { coldf \<- col_setup(nr_list = secondary, x = x, y = y) col_detect_narrow(pri… | 11.4µs | 15.7µs | 60308.29 | 61.6KB |
+| { coldf \<- col_setup(nr_list = secondary, x = x, y = y) col_detect_narrow(pri… | 11.4µs | 15.2µs | 62238.38 | 61.6KB |
 
 ``` r
 # If the 'secondary' objects are stationary, the `col_setup()` does not
@@ -172,9 +172,9 @@ bench::mark({
 }) %>% select(1:5) %>% knitr::kable()
 ```
 
-| expression                                  |    min | median | itr/sec | mem_alloc |
-|:--------------------------------------------|-------:|-------:|--------:|----------:|
-| { col_detect_narrow(primary, 0, 0, coldf) } | 1.56µs | 2.38µs |  402438 |    10.2KB |
+| expression                                  |   min | median |  itr/sec | mem_alloc |
+|:--------------------------------------------|------:|-------:|---------:|----------:|
+| { col_detect_narrow(primary, 0, 0, coldf) } | 1.6µs | 2.05µs | 408200.7 |    10.2KB |
 
 ## Animated Example
 

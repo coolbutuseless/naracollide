@@ -156,10 +156,10 @@ SEXP col_detect_broad_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_, SEXP hjust_, SEXP
 
   for (int i = 0; i < N; i++) {
     overlap[i] = !(
-        x         > x1[i] |
-        x + w - 1 < x0[i] |
-        y         > y1[i] |
-        y + h - 1 < y0[i]
+        (x         > x1[i]) |
+        (x + w - 1 < x0[i]) |
+        (y         > y1[i]) |
+        (y + h - 1 < y0[i])
     );
   }
   
