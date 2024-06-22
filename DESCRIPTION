@@ -1,0 +1,14 @@
+Package: naracollide
+Type: Package
+Title: Collision Detection Between Native Rasters
+Version: 0.1.0
+Authors@R: c(
+    person("Mike", "Cheng", role = c("aut", "cre", 'cph'), email = "mikefc@coolbutuseless.com")
+    )
+Maintainer: Mike Cheng <mikefc@coolbutuseless.com>
+Description: Collision detection between native rasters.
+License: MIT + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.3.1
+Suggests:
+    nara
