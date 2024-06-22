@@ -10,5 +10,6 @@ Description: Collision detection between native rasters.
 License: MIT + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.3.1
+Remotes: coolbutuseless/nara
 Suggests:
     nara
