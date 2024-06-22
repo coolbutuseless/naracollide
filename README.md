@@ -121,57 +121,60 @@ times/second (Apple M2).
 
 When the `secondary` objects are known to be stationary (and the
 `col_setup()` structure only needs to be created once), checking for
-collisions runs about 500k times/second (Apple M2).
+collisions runs about 300k times/second (Apple M2).
 
 ``` r
+set.seed(1)
 library(nara)
 library(naracollide)
-primary <- nr_new(20, 20)
 
+# Setup primary sprite
+primary <- nr_new(100, 100)
+
+# Setup 100 secondary sprites
 N <- 100
 secondary <- lapply(seq_len(N), function(x) nr_new(20, 20))
-x <- sample(400, N, T)
-y <- sample(400, N, T)
+x <- sample(200, N, T)
+y <- sample(200, N, T)
 
-
+# Setup the collision data structure and look for collisions
 coldf <- col_setup(nr_list = secondary, x = x, y = y)
 col_detect_narrow(primary, 0, 0, coldf)
 ```
 
-    #>   [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-    #>  [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-    #>  [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-    #>  [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-    #>  [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-    #>  [61] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-    #>  [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-    #>  [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-    #>  [97] FALSE FALSE FALSE FALSE
+    #>   [1]  TRUE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE  TRUE  TRUE FALSE FALSE
+    #>  [13]  TRUE  TRUE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [25] FALSE  TRUE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE  TRUE
+    #>  [37] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE  TRUE
+    #>  [49] FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE  TRUE FALSE FALSE
+    #>  [61] FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE
+    #>  [73]  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [85] FALSE FALSE FALSE  TRUE FALSE FALSE  TRUE FALSE FALSE  TRUE FALSE FALSE
+    #>  [97] FALSE  TRUE FALSE FALSE
 
 ``` r
+# If secondary objects move, then need to run `col_setup()` each frame
 bench::mark({
   coldf <- col_setup(nr_list = secondary, x = x, y = y)
   col_detect_narrow(primary, 0, 0, coldf)
-})
+}) %>% select(1:5) %>% knitr::kable()
 ```
 
-    #> # A tibble: 1 × 6
-    #>   expression                             min median `itr/sec` mem_alloc `gc/sec`
-    #>   <bch:expr>                          <bch:> <bch:>     <dbl> <bch:byt>    <dbl>
-    #> 1 { coldf <- col_setup(nr_list = sec… 10.3µs 13.8µs    67559.    52.3KB     54.1
+| expression | min | median | itr/sec | mem_alloc |
+|:---|---:|---:|---:|---:|
+| { coldf \<- col_setup(nr_list = secondary, x = x, y = y) col_detect_narrow(pri… | 11.4µs | 15.7µs | 60308.29 | 61.6KB |
 
 ``` r
 # If the 'secondary' objects are stationary, the `col_setup()` does not
 # need to be run each time.
 bench::mark({
   col_detect_narrow(primary, 0, 0, coldf)
-})
+}) %>% select(1:5) %>% knitr::kable()
 ```
 
-    #> # A tibble: 1 × 6
-    #>   expression                             min median `itr/sec` mem_alloc `gc/sec`
-    #>   <bch:expr>                           <bch> <bch:>     <dbl> <bch:byt>    <dbl>
-    #> 1 { col_detect_narrow(primary, 0, 0, … 656ns  738ns  1181238.      896B        0
+| expression                                  |    min | median | itr/sec | mem_alloc |
+|:--------------------------------------------|-------:|-------:|--------:|----------:|
+| { col_detect_narrow(primary, 0, 0, coldf) } | 1.56µs | 2.38µs |  402438 |    10.2KB |
 
 ## Animated Example
 

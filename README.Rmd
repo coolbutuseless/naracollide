@@ -12,6 +12,7 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 
+library(dplyr)
 library(naracollide)
 ```
 
@@ -123,33 +124,37 @@ For moving `secondary` objects - where the `col_setup()` structure needs to be
 created each time, checking for collisions runs about 50k times/second (Apple M2).
 
 When the `secondary` objects are known to be stationary (and the `col_setup()` structure 
-only needs to be created once), checking for collisions runs about 500k times/second (Apple M2).
+only needs to be created once), checking for collisions runs about 300k times/second (Apple M2).
 
 ```{r}
+set.seed(1)
 library(nara)
 library(naracollide)
-primary <- nr_new(20, 20)
 
+# Setup primary sprite
+primary <- nr_new(100, 100)
+
+# Setup 100 secondary sprites
 N <- 100
 secondary <- lapply(seq_len(N), function(x) nr_new(20, 20))
-x <- sample(400, N, T)
-y <- sample(400, N, T)
+x <- sample(200, N, T)
+y <- sample(200, N, T)
 
-
+# Setup the collision data structure and look for collisions
 coldf <- col_setup(nr_list = secondary, x = x, y = y)
 col_detect_narrow(primary, 0, 0, coldf)
 
-
+# If secondary objects move, then need to run `col_setup()` each frame
 bench::mark({
   coldf <- col_setup(nr_list = secondary, x = x, y = y)
   col_detect_narrow(primary, 0, 0, coldf)
-})
+}) %>% select(1:5) %>% knitr::kable()
 
 # If the 'secondary' objects are stationary, the `col_setup()` does not
 # need to be run each time.
 bench::mark({
   col_detect_narrow(primary, 0, 0, coldf)
-})
+}) %>% select(1:5) %>% knitr::kable()
 ```
 
 
