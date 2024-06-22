@@ -1,7 +1,7 @@
 Package: naracollide
 Type: Package
 Title: Collision Detection Between Native Rasters
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: c(
     person("Mike", "Cheng", role = c("aut", "cre", 'cph'), email = "mikefc@coolbutuseless.com")
     )

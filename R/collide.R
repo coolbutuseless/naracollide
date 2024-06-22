@@ -19,6 +19,11 @@ col_create_mask <- function(nr) {
 #' 
 #' @param nr_list list of native rasters
 #' @param x,y coordinates for each native raster
+#' @param hjust,vjust specify horizontal and vertical justification of the 
+#'        raster.  e.g. \code{hjust = vjust = 0} the blitting
+#'        starts at the top-left of the image. Use \code{hjust = vjust = 0.5}
+#'        to treat the centre of the \code{src_} as the blitting origin.
+#'        Default (0, 0)
 #' 
 #' @return collision data.frame with stored information about all the given 
 #'         native rasters.  Each row represents the corresponding object in the
@@ -31,14 +36,15 @@ col_create_mask <- function(nr) {
 #' coldf
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-col_setup <- function(nr_list, x, y) {
-  .Call(col_setup_, nr_list, as.integer(round(x)), as.integer(round(y)))
+col_setup <- function(nr_list, x, y, hjust = 0, vjust = 0) {
+  .Call(col_setup_, nr_list, as.integer(round(x)), as.integer(round(y)), hjust, vjust)
 }
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Detect bounding box collision
 #'
+#' @inheritParams col_setup
 #' @param nr primary native raster which will be tested against all the 
 #'        native rasters represented in \code{coldf}
 #' @param x,y Scalar coordinates of \code{nr}
@@ -48,8 +54,8 @@ col_setup <- function(nr_list, x, y) {
 #'         the native rasters in \code{coldf}, otherwise FALSE.
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-col_detect_broad <- function(nr, x, y, coldf) {
-  .Call(col_detect_broad_, nr, x, y, coldf);
+col_detect_broad <- function(nr, x, y, coldf, hjust = 0, vjust = 0) {
+  .Call(col_detect_broad_, nr, x, y, coldf, hjust, vjust);
 }
 
 
@@ -71,8 +77,8 @@ col_detect_broad <- function(nr, x, y, coldf) {
 #' 
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-col_detect_narrow <- function(nr, x, y, coldf) {
-  .Call(col_detect_narrow_, nr, x, y, coldf)
+col_detect_narrow <- function(nr, x, y, coldf, hjust = 0, vjust = 0) {
+  .Call(col_detect_narrow_, nr, x, y, coldf, hjust, vjust)
 }
 
 

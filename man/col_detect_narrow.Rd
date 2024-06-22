@@ -4,7 +4,7 @@
 \alias{col_detect_narrow}
 \title{Detect overlapping non-transparent pixels}
 \usage{
-col_detect_narrow(nr, x, y, coldf)
+col_detect_narrow(nr, x, y, coldf, hjust = 0, vjust = 0)
 }
 \arguments{
 \item{nr}{primary native raster which will be tested against all the 
@@ -13,6 +13,12 @@ native rasters represented in \code{coldf}}
 \item{x, y}{Scalar coordinates of \code{nr}}
 
 \item{coldf}{collision data.frame returned by \code{col_setup()}}
+
+\item{hjust, vjust}{specify horizontal and vertical justification of the 
+raster.  e.g. \code{hjust = vjust = 0} the blitting
+starts at the top-left of the image. Use \code{hjust = vjust = 0.5}
+to treat the centre of the \code{src_} as the blitting origin.
+Default (0, 0)}
 }
 \value{
 logical vector with an entry for each row in \code{coldf}; TRUE

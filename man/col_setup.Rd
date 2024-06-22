@@ -4,12 +4,18 @@
 \alias{col_setup}
 \title{Setup the collision structure}
 \usage{
-col_setup(nr_list, x, y)
+col_setup(nr_list, x, y, hjust = 0, vjust = 0)
 }
 \arguments{
 \item{nr_list}{list of native rasters}
 
 \item{x, y}{coordinates for each native raster}
+
+\item{hjust, vjust}{specify horizontal and vertical justification of the 
+raster.  e.g. \code{hjust = vjust = 0} the blitting
+starts at the top-left of the image. Use \code{hjust = vjust = 0.5}
+to treat the centre of the \code{src_} as the blitting origin.
+Default (0, 0)}
 }
 \value{
 collision data.frame with stored information about all the given 

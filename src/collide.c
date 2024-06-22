@@ -33,13 +33,16 @@ SEXP col_create_mask_(SEXP nr_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Setup collision structure
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP col_setup_(SEXP nr_list_, SEXP x_, SEXP y_) {
+SEXP col_setup_(SEXP nr_list_, SEXP x_, SEXP y_, SEXP hjust_, SEXP vjust_) {
   
   int nprotect = 0;
   int N = length(nr_list_);
   if (N != length(x_) || N != length(y_)) {
     error("'nr_list', 'x' and 'y', must all be the same length");
   }
+  
+  double hjust = asReal(hjust_);
+  double vjust = asReal(vjust_);
   
   SEXP x0_   = PROTECT(allocVector(INTSXP, N)); nprotect++;
   SEXP y0_   = PROTECT(allocVector(INTSXP, N)); nprotect++;
@@ -60,10 +63,11 @@ SEXP col_setup_(SEXP nr_list_, SEXP x_, SEXP y_) {
   
   for (int i = 0; i < N; i++) {
     SEXP nr_ = VECTOR_ELT(nr_list_, i);
-    w[i] = Rf_ncols(nr_);
-    h[i] = Rf_nrows(nr_);
-    x0[i] = (int)round(x[i]);
-    y0[i] = (int)round(y[i]);
+    
+    w[i]  = Rf_ncols(nr_);
+    h[i]  = Rf_nrows(nr_);
+    x0[i] = (int)round(x[i] - hjust * w[i]);
+    y0[i] = (int)round(y[i] - vjust * h[i]);
     x1[i] = x0[i] + w[i] - 1;
     y1[i] = y0[i] + h[i] - 1;
     
@@ -76,7 +80,7 @@ SEXP col_setup_(SEXP nr_list_, SEXP x_, SEXP y_) {
   // Setup an empty data.frame
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int ncols = 7;
-  SEXP df_ = PROTECT(allocVector(VECSXP, ncols)); nprotect++;
+  SEXP df_  = PROTECT(allocVector(VECSXP, ncols)); nprotect++;
   SEXP nms_ = PROTECT(allocVector(STRSXP, ncols)); nprotect++;
   SET_STRING_ELT(nms_, 0, mkChar("x0"));
   SET_STRING_ELT(nms_, 1, mkChar("y0"));
@@ -120,13 +124,16 @@ SEXP col_setup_(SEXP nr_list_, SEXP x_, SEXP y_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP col_detect_broad_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_) {
+SEXP col_detect_broad_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_, SEXP hjust_, SEXP vjust_) {
   
   int w = Rf_ncols(nr_);
   int h = Rf_nrows(nr_);
   
-  int x = asInteger(x_);
-  int y = asInteger(y_);
+  double hjust = asReal(hjust_);
+  double vjust = asReal(vjust_);
+  
+  int x = asInteger(x_) - round(hjust * w);
+  int y = asInteger(y_) - round(vjust * h);
   
   SEXP x0_   = VECTOR_ELT(cldf_, 0);
   SEXP y0_   = VECTOR_ELT(cldf_, 1);
@@ -168,9 +175,15 @@ SEXP col_detect_broad_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP col_detect_narrow_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_) {
+SEXP col_detect_narrow_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_, SEXP hjust_, SEXP vjust_) {
   
   int nprotect = 0;
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Get broad overlap for overlapping rectangles
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP overlap_ = PROTECT(col_detect_broad_(nr_, x_, y_, cldf_, hjust_, vjust_)); nprotect++;
+  int *overlap = LOGICAL(overlap_);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Unpack info about the primary sprite
@@ -178,14 +191,12 @@ SEXP col_detect_narrow_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_) {
   int w = Rf_ncols(nr_);
   int h = Rf_nrows(nr_);
   
-  int x = asInteger(x_);
-  int y = asInteger(y_);
+  double hjust = asReal(hjust_);
+  double vjust = asReal(vjust_);
   
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Get broad overlap for overlapping rectangles
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP overlap_ = PROTECT(col_detect_broad_(nr_, x_, y_, cldf_)); nprotect++;
-  int *overlap = LOGICAL(overlap_);
+  int x = asInteger(x_) - round(hjust * w);
+  int y = asInteger(y_) - round(vjust * h);
+  
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Sanity check
@@ -221,7 +232,7 @@ SEXP col_detect_narrow_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_) {
   for (int i = 0; i < N; i++) {
     if (!overlap[i]) continue;
     
-    // Rprintf("Primary overlaps with %i\n", i);
+    Rprintf("Primary overlaps with %i\n", i);
     
     uint8_t *smask = RAW(VECTOR_ELT(mask_, i));  
     
@@ -231,9 +242,9 @@ SEXP col_detect_narrow_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_) {
     int ymin = max(y        , y0[i]);
     int ymax = min(y + h - 1, y1[i]);
     
-    // Rprintf("screen: (%i, %i) (%i, %i)\n", xmin        , ymin        , xmax - xmin, ymax - ymin);  
-    // Rprintf("prim  : (%i, %i) (%i, %i)\n", xmin - x    , ymin - y    , xmax - xmin, ymax - ymin);  
-    // Rprintf("second: (%i, %i) (%i, %i)\n", xmin - x0[i], ymin - y0[i], xmax - xmin, ymax - ymin);  
+    Rprintf("screen: (%i, %i) (%i, %i)\n", xmin        , ymin        , xmax - xmin, ymax - ymin);
+    Rprintf("prim  : (%i, %i) (%i, %i)\n", xmin - x    , ymin - y    , xmax - xmin, ymax - ymin);
+    Rprintf("second: (%i, %i) (%i, %i)\n", xmin - x0[i], ymin - y0[i], xmax - xmin, ymax - ymin);
     
     int collision = 0;
     for (int xoff = 0; xoff < (xmax - xmin); xoff++) {
@@ -259,29 +270,5 @@ SEXP col_detect_narrow_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_) {
   UNPROTECT(nprotect);
   return overlap_;
 }
-
-
-// xmin <- max(xhero                 , cldf$x0[idx])
-//   xmax <- min(xhero + ncol(hero) - 1, cldf$x1[idx])
-//   
-//   ymin <- max(yhero                 , cldf$y0[idx])
-//   ymax <- min(yhero + nrow(hero) - 1, cldf$y1[idx])
-//   
-//   hero_mask <- create_mask(hero) 
-//   
-//   sub_hero <- nr_crop(hero_mask, xmin - xhero, ymin - yhero, xmax - xmin, ymax - ymin)
-//   
-//   baddy <- cldf[idx, ]
-// 
-// sub_baddy <- nr_crop(baddy$mask[[1]], xmin - baddy$x0, ymin - baddy$y0, 
-//                      w = xmax - xmin, h = ymax - ymin)
-//   
-// #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// # We now have enough information for a detailed overlap
-// #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//   overlap[idx] <- any(sub_hero & sub_baddy)
-
-
-
 
 

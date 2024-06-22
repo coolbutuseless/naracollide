@@ -6,6 +6,7 @@
 <!-- badges: start -->
 
 ![](https://img.shields.io/badge/cool-useless-green.svg)
+[![R-CMD-check](https://github.com/coolbutuseless/naracollide/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/naracollide/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `{naracollide}` is for detecting collisions between native raster
@@ -43,8 +44,8 @@ screen <- nr_new(200, 200, 'grey90')
 
 # The R logo as a native raster
 logo  <- png::readPNG(system.file("img", "Rlogo.png", package="png"), native = TRUE)
-xlogo <- 50
-ylogo <- 50
+xlogo <- 100
+ylogo <-  90
 
 # Set up the 4 circular targets
 targets <- lapply(1:4, function(i) {
@@ -52,16 +53,16 @@ targets <- lapply(1:4, function(i) {
   nr_circle(target, 10, 10, 10, c('firebrick', 'darkblue', 'darkgreen', 'black')[i])
 })
 
-xtargets <- c(40,  40, 140, 140)
-ytargets <- c(40, 140,  40, 140)
+xtargets <- c(50,  50, 150, 150)
+ytargets <- c(50, 150,  50, 150)
 
 # Draw the targets
 for (i in seq_along(targets)) {
-  nr_blit(screen, xtargets[i], ytargets[i], targets[[i]])
+  nr_blit(screen, xtargets[i], ytargets[i], targets[[i]], hjust = 0.5, vjust = 0.5)
 }
 
 # Draw the logo
-nr_blit(screen, xlogo, ylogo, logo)
+nr_blit(screen, xlogo, ylogo, logo, hjust = 0.5, vjust = 0.5)
 
 # Show the screen
 plot(screen, T)
@@ -71,22 +72,31 @@ plot(screen, T)
 
 ``` r
 # Setup collision detection
-coldf <- col_setup(targets, xtargets, ytargets)
+coldf <- col_setup(targets, xtargets, ytargets, hjust = 0.5, vjust = 0.5)
 
 # Check for bounding box intersection
 # Two `TRUE` values so there are 2 intersections
 # out of the possible 4 objects to intersect with.
-# Intesection is with the 1st and 3rd targets
-col_detect_broad(logo, xlogo, ylogo, coldf)
+# Intersection is with the 1st and 3rd targets
+col_detect_broad(logo, xlogo, ylogo, coldf, hjust = 0.5, vjust = 0.5)
 ```
 
     #> [1]  TRUE FALSE  TRUE FALSE
 
 ``` r
 # Check for overlapping pixels  
-# All values are `FALSE` so there are no overlapping pixels
-col_detect_narrow(logo, xlogo, ylogo, coldf)
+# All values are `FALSE` as there are no overlapping pixels
+col_detect_narrow(logo, xlogo, ylogo, coldf, hjust = 0.5, vjust = 0.5)
 ```
+
+    #> Primary overlaps with 0
+    #> screen: (50, 52) (10, 8)
+    #> prim  : (0, 0) (10, 8)
+    #> second: (10, 12) (10, 8)
+    #> Primary overlaps with 2
+    #> screen: (140, 52) (9, 8)
+    #> prim  : (90, 0) (9, 8)
+    #> second: (0, 12) (9, 8)
 
     #> [1] FALSE FALSE FALSE FALSE
 
@@ -101,8 +111,8 @@ see:
   returned by `col_detect_narrow()` are `FALSE`
 
 ``` r
-nr_rect(screen, xlogo, ylogo, ncol(logo), nrow(logo), fill = NA, color = 'black')
-nr_rect(screen, xtargets, ytargets, 21, 21, fill = NA, color = 'grey50')
+nr_rect(screen, xlogo, ylogo, ncol(logo), nrow(logo), fill = NA, color = 'black', hjust = 0.5, vjust = 0.5)
+nr_rect(screen, xtargets, ytargets, 21, 21, fill = NA, color = 'grey50', hjust = 0.5, vjust = 0.5)
 
 plot(screen, T)
 ```
