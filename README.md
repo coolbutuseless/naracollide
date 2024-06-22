@@ -89,15 +89,6 @@ col_detect_broad(logo, xlogo, ylogo, coldf, hjust = 0.5, vjust = 0.5)
 col_detect_narrow(logo, xlogo, ylogo, coldf, hjust = 0.5, vjust = 0.5)
 ```
 
-    #> Primary overlaps with 0
-    #> screen: (50, 52) (10, 8)
-    #> prim  : (0, 0) (10, 8)
-    #> second: (10, 12) (10, 8)
-    #> Primary overlaps with 2
-    #> screen: (140, 52) (9, 8)
-    #> prim  : (90, 0) (9, 8)
-    #> second: (0, 12) (9, 8)
-
     #> [1] FALSE FALSE FALSE FALSE
 
 ### View bounding boxes
@@ -118,6 +109,69 @@ plot(screen, T)
 ```
 
 <img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+
+## Benchmark
+
+Search for collisions of a `primary` native raster against a backdrop of
+100 `secondary` native rasters.
+
+For moving `secondary` objects - where the `col_setup()` structure needs
+to be created each time, checking for collisions runs about 50k
+times/second (Apple M2).
+
+When the `secondary` objects are known to be stationary (and the
+`col_setup()` structure only needs to be created once), checking for
+collisions runs about 500k times/second (Apple M2).
+
+``` r
+library(nara)
+library(naracollide)
+primary <- nr_new(20, 20)
+
+N <- 100
+secondary <- lapply(seq_len(N), function(x) nr_new(20, 20))
+x <- sample(400, N, T)
+y <- sample(400, N, T)
+
+
+coldf <- col_setup(nr_list = secondary, x = x, y = y)
+col_detect_narrow(primary, 0, 0, coldf)
+```
+
+    #>   [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [61] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+    #>  [97] FALSE FALSE FALSE FALSE
+
+``` r
+bench::mark({
+  coldf <- col_setup(nr_list = secondary, x = x, y = y)
+  col_detect_narrow(primary, 0, 0, coldf)
+})
+```
+
+    #> # A tibble: 1 × 6
+    #>   expression                             min median `itr/sec` mem_alloc `gc/sec`
+    #>   <bch:expr>                          <bch:> <bch:>     <dbl> <bch:byt>    <dbl>
+    #> 1 { coldf <- col_setup(nr_list = sec… 10.3µs 13.8µs    67559.    52.3KB     54.1
+
+``` r
+# If the 'secondary' objects are stationary, the `col_setup()` does not
+# need to be run each time.
+bench::mark({
+  col_detect_narrow(primary, 0, 0, coldf)
+})
+```
+
+    #> # A tibble: 1 × 6
+    #>   expression                             min median `itr/sec` mem_alloc `gc/sec`
+    #>   <bch:expr>                           <bch> <bch:>     <dbl> <bch:byt>    <dbl>
+    #> 1 { col_detect_narrow(primary, 0, 0, … 656ns  738ns  1181238.      896B        0
 
 ## Animated Example
 

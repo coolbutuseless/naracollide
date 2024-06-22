@@ -232,7 +232,7 @@ SEXP col_detect_narrow_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_, SEXP hjust_, SEX
   for (int i = 0; i < N; i++) {
     if (!overlap[i]) continue;
     
-    Rprintf("Primary overlaps with %i\n", i);
+    // Rprintf("Primary overlaps with %i\n", i);
     
     uint8_t *smask = RAW(VECTOR_ELT(mask_, i));  
     
@@ -242,9 +242,9 @@ SEXP col_detect_narrow_(SEXP nr_, SEXP x_, SEXP y_, SEXP cldf_, SEXP hjust_, SEX
     int ymin = max(y        , y0[i]);
     int ymax = min(y + h - 1, y1[i]);
     
-    Rprintf("screen: (%i, %i) (%i, %i)\n", xmin        , ymin        , xmax - xmin, ymax - ymin);
-    Rprintf("prim  : (%i, %i) (%i, %i)\n", xmin - x    , ymin - y    , xmax - xmin, ymax - ymin);
-    Rprintf("second: (%i, %i) (%i, %i)\n", xmin - x0[i], ymin - y0[i], xmax - xmin, ymax - ymin);
+    // Rprintf("screen: (%i, %i) (%i, %i)\n", xmin        , ymin        , xmax - xmin, ymax - ymin);
+    // Rprintf("prim  : (%i, %i) (%i, %i)\n", xmin - x    , ymin - y    , xmax - xmin, ymax - ymin);
+    // Rprintf("second: (%i, %i) (%i, %i)\n", xmin - x0[i], ymin - y0[i], xmax - xmin, ymax - ymin);
     
     int collision = 0;
     for (int xoff = 0; xoff < (xmax - xmin); xoff++) {
